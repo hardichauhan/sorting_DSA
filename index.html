@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Sorting Visualizer</title>
+    <style>
+        body {
+            text-align: center;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f0f2f5;
+            color: #1a1a1a;
+        }
+
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+        }
+
+        .controls {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            margin: 20px auto;
+            max-width: 600px;
+        }
+
+        select,
+        button {
+            padding: 12px 20px;
+            margin: 5px;
+            border-radius: 6px;
+            border: none;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        select {
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            cursor: pointer;
+        }
+
+        select:hover {
+            border-color: #4a90e2;
+        }
+
+        button {
+            background: #4a90e2;
+            color: white;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        button:hover {
+            background: #357abd;
+            transform: translateY(-2px);
+        }
+
+        #container {
+            background: white;
+            margin: 20px auto;
+            padding: 20px;
+            height: 300px;
+            max-width: 800px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .bar {
+            width: 30px;
+            margin: 0 5px;
+            background: linear-gradient(45deg, #4a90e2, #357abd);
+            border-radius: 4px 4px 0 0;
+            transition: height 0.3s ease;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Animation for bars */
+        @keyframes barHover {
+            0% {
+                transform: scaleY(1);
+            }
+
+            50% {
+                transform: scaleY(1.05);
+            }
+
+            100% {
+                transform: scaleY(1);
+            }
+        }
+
+        .bar:hover {
+            animation: barHover 0.5s ease;
+            background: linear-gradient(45deg, #357abd, #4a90e2);
+        }
+
+        /* Responsive design */
+        @media (max-width: 600px) {
+            .controls {
+                padding: 15px;
+                margin: 10px;
+            }
+
+            select,
+            button {
+                width: 100%;
+                margin: 5px 0;
+            }
+
+            .bar {
+                width: 20px;
+                margin: 0 2px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Sorting Visualizer</h1>
+
+    <div class="controls">
+        <select id="sortType">
+            <option value="bubble">Bubble Sort</option>
+            <option value="selection">Selection Sort</option>
+        </select>
+        <button onclick="getNewArray()">Generate New Array</button>
+        <button onclick="startSort()">Start Sorting</button>
+    </div>
+
+    <div id="container"></div>
+
+    <script>
+        let array = [];
+        let isSorting = false;
+
+        async function getNewArray() {
+            if (isSorting) return;
+            const response = await fetch('http://localhost:5000/get-array');
+            const data = await response.json();
+            array = data.array;
+            showArray();
+        }
+
+        function showArray() {
+            const container = document.getElementById('container');
+            container.innerHTML = '';
+            const maxVal = Math.max(...array);
+
+            array.forEach(num => {
+                const bar = document.createElement('div');
+                bar.className = 'bar';
+                // Scale height based on maximum value
+                bar.style.height = (num / maxVal * 250) + 'px';
+                container.appendChild(bar);
+            });
+        }
+
+        async function startSort() {
+            if (isSorting) return;
+            isSorting = true;
+            const sortType = document.getElementById('sortType').value;
+
+            try {
+                const response = await fetch('http://localhost:5000/sort', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        array: array,
+                        type: sortType
+                    })
+                });
+
+                const data = await response.json();
+
+                for (let i = 0; i < data.steps.length; i++) {
+                    array = data.steps[i];
+                    showArray();
+                    await new Promise(r => setTimeout(r, 500));
+                }
+            } catch (error) {
+                console.error('Sorting error:', error);
+            }
+
+            isSorting = false;
+        }
+
+        // Initialize with a new array
+        getNewArray();
+    </script>
+</body>
+
+</html>
