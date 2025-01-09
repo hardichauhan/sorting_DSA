@@ -82,7 +82,6 @@
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
         }
 
-        /* Animation for bars */
         @keyframes barHover {
             0% {
                 transform: scaleY(1);
@@ -102,7 +101,6 @@
             background: linear-gradient(45deg, #357abd, #4a90e2);
         }
 
-        /* Responsive design */
         @media (max-width: 600px) {
             .controls {
                 padding: 15px;
@@ -157,7 +155,6 @@
             array.forEach(num => {
                 const bar = document.createElement('div');
                 bar.className = 'bar';
-                // Scale height based on maximum value
                 bar.style.height = (num / maxVal * 250) + 'px';
                 container.appendChild(bar);
             });
@@ -194,7 +191,6 @@
             isSorting = false;
         }
 
-        // Initialize with a new array
         getNewArray();
     </script>
 </body>
